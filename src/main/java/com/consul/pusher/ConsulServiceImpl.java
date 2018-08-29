@@ -28,6 +28,11 @@ public final class ConsulServiceImpl implements ConsulService {
     @Value("#{'${spring.cloud.consul.config.prefix}/'.concat('${spring.cloud.consul.config.name}/')}")
     private String keyPrefix; // key所在的目录前缀，格式为：config/应用名称/
 
+    /**
+     * 将应用的配置信息保存到consul中
+     *
+     * @param kvValue 封装的配置信息的map对象
+     */
     @Override
     public void setKVValue(Map<String, String> kvValue) {
         for (Map.Entry<String, String> kv : kvValue.entrySet()) {
@@ -48,6 +53,12 @@ public final class ConsulServiceImpl implements ConsulService {
         }
     }
 
+    /**
+     * 获取应用配置的所有key-value信息
+     *
+     * @param keyPrefix key所在的目录前缀，格式为：config/应用名称/
+     * @return 应用配置的所有key-value信息
+     */
     @Override
     public Map<String, String> getKVValues(String keyPrefix) {
         Map<String, String> map = new HashMap<>();
@@ -74,6 +85,12 @@ public final class ConsulServiceImpl implements ConsulService {
         return this.getKVValues(keyPrefix);
     }
 
+    /**
+     * 获取应用配置的所有key信息
+     *
+     * @param keyPrefix key所在的目录前缀，格式为：config/应用名称/
+     * @return 应用配置的所有key信息
+     */
     @Override
     public List<String> getKVKeysOnly(String keyPrefix) {
         List<String> list = new ArrayList<>();

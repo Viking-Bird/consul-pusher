@@ -30,26 +30,16 @@ public class ConsulConfig {
     @Autowired
     private ConsulService consulServiceImpl;
 
-    @Value("${spring.cloud.consul.config.cover: false}") // 默认不覆盖, 覆盖: true / 不覆盖: false
+    @Value("${spring.cloud.consul.config.cover: false}") // 是否用本地配置覆盖consul远程配置，默认不覆盖, 覆盖: true / 不覆盖: false
     private Boolean cover;
 
-
-    private Map<String, Object> formatMap(Map<String, Object> map) {
-        Map<String, Object> newMap = new HashMap<>();
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            if (entry.getValue().getClass() == LinkedHashMap.class) {
-                Map<String, Object> subMap = formatMap((Map<String, Object>) entry.getValue());
-                newMap.put(entry.getKey(), subMap);
-            } else if (entry.getValue().getClass() == ArrayList.class) {
-                JSONArray jsonArray = new JSONArray((ArrayList) entry.getValue());
-                newMap.put(entry.getKey(), jsonArray);
-            } else {
-                newMap.put(entry.getKey(), entry.getValue().toString());
-            }
-        }
-        return newMap;
-    }
-
+    /**
+     * 加载配置信息到consul中
+     *
+     * @param key     配置的key
+     * @param value   配置的值
+     * @param keyList 在consul中已存在的配置信息key集合
+     */
     private void visitProps(String key, Object value, List<String> keyList) {
         if (value.getClass() == String.class || value.getClass() == JSONArray.class) {
             if (cover) {  // 覆盖
@@ -72,6 +62,35 @@ public class ConsulConfig {
         }
     }
 
+
+    /**
+     * 封装配置信息到map中
+     *
+     * @param map 要封装的配置信息
+     * @return 配置信息map
+     */
+    private Map<String, Object> formatMap(Map<String, Object> map) {
+        Map<String, Object> newMap = new HashMap<>();
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            if (entry.getValue().getClass() == LinkedHashMap.class) {
+                Map<String, Object> subMap = formatMap((Map<String, Object>) entry.getValue());
+                newMap.put(entry.getKey(), subMap);
+            } else if (entry.getValue().getClass() == ArrayList.class) {
+                JSONArray jsonArray = new JSONArray((ArrayList) entry.getValue());
+                newMap.put(entry.getKey(), jsonArray);
+            } else {
+                newMap.put(entry.getKey(), entry.getValue().toString());
+            }
+        }
+        return newMap;
+    }
+
+    /**
+     * 解析yml配置
+     *
+     * @param inputStream 要解析的yml文件输入流
+     * @return 解析结果
+     */
     private Map<String, Object> paserYml(InputStream inputStream) {
         Map<String, Object> newMap = new HashMap<>();
         try {
@@ -84,6 +103,9 @@ public class ConsulConfig {
         return newMap;
     }
 
+    /**
+     * 启动时加载application.yml配置文件信息到consul配置中心
+     */
     @PostConstruct
     private void init() {
         PropertiesProviderSelector propertiesProviderSelector = new PropertiesProviderSelector(
