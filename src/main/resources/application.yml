@@ -1,0 +1,5 @@
+message:
+  password: password
+  username: username
+  sendNick: sendNick
+  url: test.org:8001/send

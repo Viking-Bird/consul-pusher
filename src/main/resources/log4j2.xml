@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <!--日志路径、名称配置-->
+    <Properties>
+        <!--需要修改：日志名称，可以与bootstrap.yml文件里的spring.application.name属性保持一致-->
+        <Property name="service_name">consul-pusher</Property>
+        <!--需要修改：日志保存路径-->
+        <Property name="baseDir">../logs/${service_name}/</Property>
+        <!--不用修改：当前正在写日志的日志文件名称-->
+        <Property name="fileName">${baseDir}/${service_name}.log</Property>
+        <!--不用修改：已经备份的日志文件名称-->
+        <Property name="rolling_filename">${baseDir}/${service_name}-%d{yyyy-MM-dd-HH}-%i.log</Property>
+        <!--不用修改：要删除的日志文件名称-->
+        <Property name="delete_fileName">${service_name}-*.log</Property>
+        <!--不用修改：日志格式-->
+        <Property name="pattern">%d{yyyy/MM/dd HH:mm:ss,SSS} [%p] [%t] %C.%M(%F:%L) - %m%n</Property>
+    </Properties>
+
+    <Appenders>
+        # Console appender
+        <Console name="stdout" target="SYSTEM_OUT">
+            # Pattern of log message for console appender
+            <PatternLayout pattern="${pattern}"/>
+        </Console>
+
+        <RollingFile name="roll-by-time-and-size"
+                     fileName="${fileName}"
+                     filePattern="${rolling_filename}"
+                     ignoreExceptions="false">
+            <PatternLayout>
+                <Pattern>${pattern}</Pattern>
+            </PatternLayout>
+            <Policies>
+                <OnStartupTriggeringPolicy />
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="20MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5">
+                <Delete basePath="${baseDir}">
+                    <IfFileName glob="${delete_fileName}"/>
+                    <IfLastModified age="5d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        # Override log level for specified package
+        <Logger name="com.consul.pusher" level="INFO" additivity="false">
+            <AppenderRef ref="roll-by-time-and-size"/>
+            <AppenderRef ref="stdout"/>
+        </Logger>
+
+        <!-- Default logger -->
+        <Root level="INFO">
+            <AppenderRef ref="roll-by-time-and-size"/>
+            <AppenderRef ref="stdout"/>
+        </Root>
+    </Loggers>
+</Configuration>
