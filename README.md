@@ -1,3 +1,5 @@
+具体实现过程请参考博客：[Spring Cloud自动推送配置到Consul配置中心](https://my.oschina.net/dabird/blog/1935941)
+
 # consul-pusher
 
 ## 运行环境
